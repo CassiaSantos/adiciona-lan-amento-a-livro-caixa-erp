@@ -1,11 +1,14 @@
 <?php
 include 'db.php'; // Inclui o arquivo de conexão com o banco de dados.
 
+// PLANO DE CONTAS:
 // Verifica se o formulário foi submetido
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $historico = $_POST['historico'];
     $complemento = $_POST['complemento'];
     $planodecontas_id = $_POST['planodecontas'];
+    $contas_id = $_POST['contas'];
+
     $tipo = $_POST['tipo'];
     $valor = $_POST['valor'];
 
