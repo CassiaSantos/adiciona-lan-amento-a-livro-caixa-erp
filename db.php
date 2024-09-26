@@ -14,12 +14,4 @@ if ($conn->connect_error) {
     die("Falha na conexão: " . $conn->connect_error); // Se houver erro, a execução para e uma mensagem é exibida.
 }
 
-// Recupera os dados da tabela mgt_planodecontas
-$sql = "SELECT id, descricao FROM mgt_planodecontas WHERE pai IS NOT NULL"; // Somente contas com pai (subcontas)
-$result = $conn->query($sql);
-
-// Consultar os dados da tabela 'mgt_contas'
-$sql = "SELECT id, descricao FROM mgt_contas";
-$result = $conn->query($sql);
-
 ?>
