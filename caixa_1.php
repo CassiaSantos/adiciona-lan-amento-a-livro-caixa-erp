@@ -1,53 +1,18 @@
 <?php
-include 'db.php'; // Inclui o arquivo de conexão com o banco de dados.
+include 'db.php'; // Inclui o arquivo de conexão com o banco de dados
 
-// Verifica se o formulário foi enviado
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-
-    try {
-        // Cria a conexão com o banco de dados usando PDO
-        $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        
-
-        // Recebe os dados do formulário
-        $uuid_caixa = $_POST['uuid_caixa'] ?? null;
-        $data = $_POST['data'];
-        $historico = $_POST['historico'];
-        $complemento = $_POST['complemento'] ?? null;
-        $usuario = $_POST['usuario'];
-        
-        // Recebe a entrada ou saída de acordo com a seleção do rádio
-        $valor = $_POST['valor'] ?? null;
-        $tipo_transacao = $_POST['tipo_transacao']; // Define se é 'entrada' ou 'saida'
-
-        // Define valores de entrada ou saída com base na seleção
-        $entrada = ($tipo_transacao == 'entrada') ? $valor : null;
-        $saida = ($tipo_transacao == 'saida') ? $valor : null;
-
-        // Prepara a query SQL para inserção
-        $stmt = $pdo->prepare("INSERT INTO sis_caixa (uuid_caixa, data, historico, complemento, entrada, saida, usuario) 
-                               VALUES (:uuid_caixa, :data, :historico, :complemento, :entrada, :saida, :usuario)");
-
-        // Vincula os valores aos parâmetros
-        $stmt->bindParam(':uuid_caixa', $uuid_caixa);
-        $stmt->bindParam(':data', $data);
-        $stmt->bindParam(':historico', $historico);
-        $stmt->bindParam(':complemento', $complemento);
-        $stmt->bindParam(':entrada', $entrada);
-        $stmt->bindParam(':saida', $saida);
-        $stmt->bindParam(':usuario', $usuario);
-
-        // Executa a query
-        if ($stmt->execute()) {
-            echo "Dados inseridos com sucesso!";
-        } else {
-            echo "Erro ao inserir os dados.";
-        }
-    } catch (PDOException $e) {
-        echo "Erro: " . $e->getMessage();
-    }
+// Verifica se a conexão com o banco de dados foi bem-sucedida
+if (!$conn) {
+    die("Erro na conexão: " . mysqli_connect_error());
 }
+
+// Consulta SQL para buscar os dados da tabela 'mgt_contas'
+$sqlContas = "SELECT id, descricao FROM mgt_contas";
+$resultContas = $conn->query($sqlContas);
+
+// Consulta SQL para buscar os dados da tabela 'mgt_planodecontas'
+$sqlPlanoContas = "SELECT id, descricao FROM mgt_planodecontas";
+$resultPlanoContas = $conn->query($sqlPlanoContas);
 ?>
 
 <!DOCTYPE html>
@@ -80,21 +45,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <input type="radio" id="saida" name="tipo_transacao" value="saida" required>
     <label for="saida">Saída (R$)</label><br><br>
 
-    <!-- Seleção de Plano de Contas -->
-    <label for="planodecontas">Selecione o Plano de Contas:</label>
-        <select id="planodecontas" name="planodecontas" required>
-            <option value="">Selecione uma conta</option>
-            <?php
-            // Preenche as opções do select com os dados do plano de contas
-            if ($result->num_rows > 0) {
-                while ($row = $result->fetch_assoc()) {
-                    echo "<option value=\"" . $row['id'] . "\">" . $row['descricao'] . "</option>";
-                }
-            } else {
-                echo "<option value=\"\">Nenhuma conta encontrada</option>";
+    <!-- Seleção de Contas (mgt_contas) -->
+    <label for="contas">Selecione a Conta:</label>
+    <select id="contas" name="contas" required>
+        <option value="">Selecione uma conta</option>
+        <?php
+        // Verifica se há resultados na tabela 'mgt_contas'
+        if ($resultContas->num_rows > 0) {
+            // Preenche o select com as opções
+            while ($row = $resultContas->fetch_assoc()) {
+                echo "<option value=\"" . $row['id'] . "\">" . $row['descricao'] . "</option>";
             }
-            ?>
-        </select><br><br>
+        } else {
+            echo "<option value=\"\">Nenhuma conta encontrada</option>";
+        }
+        ?>
+    </select><br><br>
+
+    <!-- Seleção de Plano de Contas (mgt_planodecontas) -->
+    <label for="planodecontas">Selecione o Plano de Contas:</label>
+    <select id="planodecontas" name="planodecontas" required>
+        <option value="">Selecione um plano de contas</option>
+        <?php
+        // Verifica se há resultados na tabela 'mgt_planodecontas'
+        if ($resultPlanoContas->num_rows > 0) {
+            // Preenche o select com as opções
+            while ($row = $resultPlanoContas->fetch_assoc()) {
+                echo "<option value=\"" . $row['id'] . "\">" . $row['descricao'] . "</option>";
+            }
+        } else {
+            echo "<option value=\"\">Nenhum plano de contas encontrado</option>";
+        }
+        ?>
+    </select><br><br>
 
     <label for="valor">Valor (R$):</label>
     <input type="number" id="valor" name="valor" step="0.01" required><br><br>
@@ -106,4 +89,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </form>
 
 </body>
+
+<?php
+// Fechar a conexão com o banco de dados
+$conn->close();
+?>
+
 </html>
