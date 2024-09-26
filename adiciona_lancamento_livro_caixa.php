@@ -80,91 +80,95 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
     <title>Formulário de Cadastro - Caixa</title>
 </head>
 <body>
 
 <h2>Formulário de Cadastro de Caixa</h2>
-<form action="" method="POST">
-    <label for="uuid_caixa">UUID Caixa:</label>
-    <input type="text" id="uuid_caixa" name="uuid_caixa"><br><br>
 
-    <label for="data">Data:</label>
-    <input type="datetime-local" id="data" name="data" required><br><br>
+<section class="formulario">
+    <form action="" method="POST">
+        <label for="uuid_caixa">UUID Caixa:</label>
+        <input type="text" id="uuid_caixa" name="uuid_caixa"><br><br>
 
-    <label for="historico">Histórico:</label>
-    <input type="text" id="historico" name="historico" required><br><br>
+        <label for="data">Data:</label>
+        <input type="datetime-local" id="data" name="data" required><br><br>
 
-    <label for="complemento">Complemento:</label>
-    <textarea id="complemento" name="complemento"></textarea><br><br>
+        <label for="historico">Histórico:</label>
+        <input type="text" id="historico" name="historico" required><br><br>
 
-    <label>Tipo de Transação:</label><br>
-    <input type="radio" id="entrada" name="tipo_transacao" value="entrada" required>
-    <label for="entrada">Entrada (R$)</label><br>
+        <label for="complemento">Complemento:</label>
+        <textarea id="complemento" name="complemento"></textarea><br><br>
 
-    <input type="radio" id="saida" name="tipo_transacao" value="saida" required>
-    <label for="saida">Saída (R$)</label><br><br>
+        <label>Tipo de Transação:</label><br>
+        <input type="radio" id="entrada" name="tipo_transacao" value="entrada" required>
+        <label for="entrada">Entrada (R$)</label><br>
 
-    <!-- Seleção de Contas (mgt_contas) -->
-    <label for="contas">Selecione a Conta:</label>
-    <select id="contas" name="contas" required>
-        <option value="">Selecione uma conta</option>
-        <?php
-        if ($resultContas->num_rows > 0) {
-            while ($row = $resultContas->fetch_assoc()) {
-                echo "<option value=\"" . $row['id'] . "\">" . $row['descricao'] . "</option>";
+        <input type="radio" id="saida" name="tipo_transacao" value="saida" required>
+        <label for="saida">Saída (R$)</label><br><br>
+
+        <!-- Seleção de Contas (mgt_contas) -->
+        <label for="contas">Selecione a Conta:</label>
+        <select id="contas" name="contas" required>
+            <option value="">Selecione uma conta</option>
+            <?php
+            if ($resultContas->num_rows > 0) {
+                while ($row = $resultContas->fetch_assoc()) {
+                    echo "<option value=\"" . $row['id'] . "\">" . $row['descricao'] . "</option>";
+                }
             }
-        }
-        ?>
-    </select><br><br>
+            ?>
+        </select><br><br>
 
-    <!-- Seleção de Plano de Contas (mgt_planodecontas) -->
-    <label for="planodecontas">Selecione o Plano de Contas (Descrição):</label>
-    <select id="planodecontas" name="planodecontas" required>
-        <option value="">Selecione um plano de contas</option>
-        <?php
-        if ($resultPlanoContas->num_rows > 0) {
-            while ($row = $resultPlanoContas->fetch_assoc()) {
-                echo "<option value=\"" . $row['id'] . "\">" . $row['descricao'] . "</option>";
+        <!-- Seleção de Plano de Contas (mgt_planodecontas) -->
+        <label for="planodecontas">Selecione o Plano de Contas (Descrição):</label>
+        <select id="planodecontas" name="planodecontas" required>
+            <option value="">Selecione um plano de contas</option>
+            <?php
+            if ($resultPlanoContas->num_rows > 0) {
+                while ($row = $resultPlanoContas->fetch_assoc()) {
+                    echo "<option value=\"" . $row['id'] . "\">" . $row['descricao'] . "</option>";
+                }
             }
-        }
-        ?>
-    </select><br><br>
+            ?>
+        </select><br><br>
 
-    <!-- Seleção de Contas a Pagar (sis_contaspagar) -->
-    <label for="contaspagar">Selecione Conta a Pagar (Número de documento para referência):</label>
-    <select id="contaspagar" name="contaspagar" required>
-        <option value="">Selecione uma conta</option>
-        <?php
-        if ($resultContasPagar->num_rows > 0) {
-            while ($row = $resultContasPagar->fetch_assoc()) {
-                echo "<option value=\"" . $row['id'] . "\">" . $row['nrdocumento'] . "</option>";
+        <!-- Seleção de Contas a Pagar (sis_contaspagar) -->
+        <label for="contaspagar">Selecione Conta a Pagar (Número de documento para referência):</label>
+        <select id="contaspagar" name="contaspagar" required>
+            <option value="">Selecione uma conta</option>
+            <?php
+            if ($resultContasPagar->num_rows > 0) {
+                while ($row = $resultContasPagar->fetch_assoc()) {
+                    echo "<option value=\"" . $row['id'] . "\">" . $row['nrdocumento'] . "</option>";
+                }
             }
-        }
-        ?>
-    </select><br><br>
+            ?>
+        </select><br><br>
 
-    <!-- Seleção de Lançamento (sis_lanc) -->
-    <label for="lanc">Selecione o Lançamento (Número do documento ou identificação associada):</label>
-    <select id="lanc" name="lanc" required>
-        <option value="">Selecione um lançamento</option>
-        <?php
-        if ($resultLanc->num_rows > 0) {
-            while ($row = $resultLanc->fetch_assoc()) {
-                echo "<option value=\"" . $row['id'] . "\">" . $row['nossonum'] . "</option>";
+        <!-- Seleção de Lançamento (sis_lanc) -->
+        <label for="lanc">Selecione o Lançamento (Número do documento ou identificação associada):</label>
+        <select id="lanc" name="lanc" required>
+            <option value="">Selecione um lançamento</option>
+            <?php
+            if ($resultLanc->num_rows > 0) {
+                while ($row = $resultLanc->fetch_assoc()) {
+                    echo "<option value=\"" . $row['id'] . "\">" . $row['nossonum'] . "</option>";
+                }
             }
-        }
-        ?>
-    </select><br><br>
+            ?>
+        </select><br><br>
 
-    <label for="valor">Valor (R$):</label>
-    <input type="number" id="valor" name="valor" step="0.01" required><br><br>
+        <label for="valor">Valor (R$):</label>
+        <input type="number" id="valor" name="valor" step="0.01" required><br><br>
 
-    <label for="usuario">Usuário (ID):</label>
-    <input type="number" id="usuario" name="usuario" required><br><br>
+        <label for="usuario">Usuário (ID):</label>
+        <input type="number" id="usuario" name="usuario" required><br><br>
 
-    <input type="submit" value="Cadastrar">
-</form>
+        <input type="submit" value="Cadastrar">
+    </form>
+</section>
 
 </body>
 </html>
