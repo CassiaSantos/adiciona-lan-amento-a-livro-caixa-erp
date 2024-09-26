@@ -13,6 +13,66 @@ $resultContas = $conn->query($sqlContas);
 // Consulta SQL para buscar os dados da tabela 'mgt_planodecontas'
 $sqlPlanoContas = "SELECT id, descricao FROM mgt_planodecontas";
 $resultPlanoContas = $conn->query($sqlPlanoContas);
+
+// Consulta SQL para buscar os dados da tabela 'sis_contaspagar'
+$sqlContasPagar = "SELECT id, nrdocumento FROM sis_contaspagar";
+$resultContasPagar = $conn->query($sqlContasPagar);
+
+// Consulta SQL para buscar os dados da tabela 'sis_lanc'
+$sqlLanc = "SELECT id, nossonum FROM sis_lanc";
+$resultLanc = $conn->query($sqlLanc);
+
+// Verifica se o formulário foi enviado
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    // Recebe os dados do formulário
+    $uuid_caixa = $_POST['uuid_caixa'] ?? null;
+    $data = $_POST['data'];
+    $historico = $_POST['historico'];
+    $complemento = $_POST['complemento'] ?? null;
+    $usuario = $_POST['usuario'];
+    $valor = $_POST['valor'] ?? null;
+    $tipo_transacao = $_POST['tipo_transacao'];
+
+    // Define se é entrada ou saída
+    $entrada = ($tipo_transacao == 'entrada') ? $valor : null;
+    $saida = ($tipo_transacao == 'saida') ? $valor : null;
+
+    // IDs das seleções
+    $contas_id = $_POST['contas'];
+    $plano_contas_id = $_POST['planodecontas'];
+    $contas_pagar_id = $_POST['contaspagar'];
+    $lanc_id = $_POST['lanc'];
+
+    // Início da transação
+    $conn->begin_transaction();
+
+    try {
+        // Insere os dados na tabela sis_caixa
+        $stmt = $conn->prepare("INSERT INTO sis_caixa (uuid_caixa, data, historico, complemento, entrada, saida, usuario) 
+                               VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("sssssds", $uuid_caixa, $data, $historico, $complemento, $entrada, $saida, $usuario);
+        $stmt->execute();
+
+        // Recupera o ID inserido em sis_caixa
+        $sis_caixa_id = $stmt->insert_id;
+
+        // Insere os dados na tabela mgt_caixa_aux com o ID recuperado de sis_caixa
+        $stmt_aux = $conn->prepare("INSERT INTO mgt_caixa_aux (sis_caixa_id, mgt_contas_id, mgt_planodecontas_id, sis_contaspagar_id, sis_lanc_id) 
+                                    VALUES (?, ?, ?, ?, ?)");
+        $stmt_aux->bind_param("iiiii", $sis_caixa_id, $contas_id, $plano_contas_id, $contas_pagar_id, $lanc_id);
+        $stmt_aux->execute();
+
+        // Confirma a transação
+        $conn->commit();
+        echo "Dados cadastrados com sucesso!";
+    } catch (Exception $e) {
+        // Se houver erro, reverte a transação
+        $conn->rollback();
+        echo "Erro: " . $e->getMessage();
+    }
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -25,7 +85,7 @@ $resultPlanoContas = $conn->query($sqlPlanoContas);
 <body>
 
 <h2>Formulário de Cadastro de Caixa</h2>
-<form action="processa_saida.php" method="POST">
+<form action="" method="POST">
     <label for="uuid_caixa">UUID Caixa:</label>
     <input type="text" id="uuid_caixa" name="uuid_caixa"><br><br>
 
@@ -50,31 +110,49 @@ $resultPlanoContas = $conn->query($sqlPlanoContas);
     <select id="contas" name="contas" required>
         <option value="">Selecione uma conta</option>
         <?php
-        // Verifica se há resultados na tabela 'mgt_contas'
         if ($resultContas->num_rows > 0) {
-            // Preenche o select com as opções
             while ($row = $resultContas->fetch_assoc()) {
                 echo "<option value=\"" . $row['id'] . "\">" . $row['descricao'] . "</option>";
             }
-        } else {
-            echo "<option value=\"\">Nenhuma conta encontrada</option>";
         }
         ?>
     </select><br><br>
 
     <!-- Seleção de Plano de Contas (mgt_planodecontas) -->
-    <label for="planodecontas">Selecione o Plano de Contas:</label>
+    <label for="planodecontas">Selecione o Plano de Contas (Descrição):</label>
     <select id="planodecontas" name="planodecontas" required>
         <option value="">Selecione um plano de contas</option>
         <?php
-        // Verifica se há resultados na tabela 'mgt_planodecontas'
         if ($resultPlanoContas->num_rows > 0) {
-            // Preenche o select com as opções
             while ($row = $resultPlanoContas->fetch_assoc()) {
                 echo "<option value=\"" . $row['id'] . "\">" . $row['descricao'] . "</option>";
             }
-        } else {
-            echo "<option value=\"\">Nenhum plano de contas encontrado</option>";
+        }
+        ?>
+    </select><br><br>
+
+    <!-- Seleção de Contas a Pagar (sis_contaspagar) -->
+    <label for="contaspagar">Selecione Conta a Pagar (Número de documento para referência):</label>
+    <select id="contaspagar" name="contaspagar" required>
+        <option value="">Selecione uma conta</option>
+        <?php
+        if ($resultContasPagar->num_rows > 0) {
+            while ($row = $resultContasPagar->fetch_assoc()) {
+                echo "<option value=\"" . $row['id'] . "\">" . $row['nrdocumento'] . "</option>";
+            }
+        }
+        ?>
+    </select><br><br>
+
+    <!-- Seleção de Lançamento (sis_lanc) -->
+    <label for="lanc">Selecione o Lançamento (Número do documento ou identificação associada):</label>
+    <select id="lanc" name="lanc" required>
+        <option value="">Selecione um lançamento</option>
+        <?php
+        if ($resultLanc->num_rows > 0) {
+            while ($row = $resultLanc->fetch_assoc()) {
+                echo "<option value=\"" . $row['id'] . "\">" . $row['nossonum'] . "</option>";
+            }
         }
         ?>
     </select><br><br>
@@ -89,10 +167,4 @@ $resultPlanoContas = $conn->query($sqlPlanoContas);
 </form>
 
 </body>
-
-<?php
-// Fechar a conexão com o banco de dados
-$conn->close();
-?>
-
 </html>
