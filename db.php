@@ -18,4 +18,8 @@ if ($conn->connect_error) {
 $sql = "SELECT id, descricao FROM mgt_planodecontas WHERE pai IS NOT NULL"; // Somente contas com pai (subcontas)
 $result = $conn->query($sql);
 
+// Consultar os dados da tabela 'mgt_contas'
+$sql = "SELECT id, descricao FROM mgt_contas";
+$result = $conn->query($sql);
+
 ?>
